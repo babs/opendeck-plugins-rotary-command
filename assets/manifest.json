@@ -1,0 +1,38 @@
+{
+	"Name": "Rotary Generic Command",
+	"Description": "Run custom shell commands on rotary encoder actions (CW, CCW, press, long press)",
+	"Author": "babs",
+	"Version": "0.1.0",
+	"Icon": "icons/plugin",
+	"Category": "Custom",
+	"SDKVersion": 2,
+	"OS": [
+		{ "Platform": "linux" }
+	],
+	"CodePathLin": "opendeck-rotary-generic-x86_64-unknown-linux-gnu",
+	"CodePaths": {
+		"x86_64-unknown-linux-gnu": "opendeck-rotary-generic-x86_64-unknown-linux-gnu",
+		"aarch64-unknown-linux-gnu": "opendeck-rotary-generic-aarch64-unknown-linux-gnu"
+	},
+	"Actions": [
+		{
+			"UUID": "info.degois.damien.opendeck.plugins.rotary-command",
+			"Name": "Rotary Command",
+			"Icon": "icons/rotary",
+			"Tooltip": "Execute custom shell commands on rotary encoder actions",
+			"Controllers": ["Encoder"],
+			"SupportedInMultiActions": false,
+			"PropertyInspectorPath": "propertyInspector/rotary.html",
+			"States": [
+				{ "Image": "icons/rotary" }
+			],
+			"Encoder": {
+				"TriggerDescription": {
+					"Rotate": "CW / CCW Command",
+					"Push": "Press Command",
+					"LongTouch": "Long Press Command"
+				}
+			}
+		}
+	]
+}

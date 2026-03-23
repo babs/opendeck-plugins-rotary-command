@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Rotary Command Settings</title>
+<style>
+	body {
+		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+		font-size: 13px;
+		color: #ccc;
+		background: #2d2d2d;
+		margin: 0;
+		padding: 12px;
+	}
+	.field {
+		margin-bottom: 12px;
+	}
+	label {
+		display: block;
+		margin-bottom: 4px;
+		font-weight: 600;
+		color: #eee;
+	}
+	.hint {
+		font-size: 11px;
+		color: #888;
+		margin-top: 2px;
+	}
+	input[type="text"] {
+		width: 100%;
+		padding: 6px 8px;
+		border: 1px solid #555;
+		border-radius: 4px;
+		background: #3a3a3a;
+		color: #eee;
+		font-size: 13px;
+		box-sizing: border-box;
+	}
+	input:focus {
+		outline: none;
+		border-color: #0a84ff;
+	}
+</style>
+</head>
+<body>
+	<div class="field">
+		<label for="cw_command">Clockwise (CW) Command</label>
+		<input type="text" id="cw_command" placeholder="e.g. wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+" />
+		<div class="hint">Shell command to run on clockwise rotation.</div>
+	</div>
+
+	<div class="field">
+		<label for="ccw_command">Counter-Clockwise (CCW) Command</label>
+		<input type="text" id="ccw_command" placeholder="e.g. wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-" />
+		<div class="hint">Shell command to run on counter-clockwise rotation.</div>
+	</div>
+
+	<div class="field">
+		<label for="press_command">Press Command</label>
+		<input type="text" id="press_command" placeholder="e.g. wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle" />
+		<div class="hint">Shell command to run on short press.</div>
+	</div>
+
+	<div class="field">
+		<label for="long_press_command">Long Press Command</label>
+		<input type="text" id="long_press_command" placeholder="e.g. pavucontrol" />
+		<div class="hint">Shell command to run on long press (hold &gt; 500ms).</div>
+	</div>
+
+<script>
+	let ws;
+	let context;
+	let currentSettings = {};
+
+	const FIELDS = ["cw_command", "ccw_command", "press_command", "long_press_command"];
+
+	window.addEventListener("message", (evt) => {
+		if (!evt.data || evt.data.event !== "connect") return;
+
+		const [wsPort, piUuid, registerEvent, _pluginInfo, actionInfo] = evt.data.payload;
+		context = actionInfo?.context || piUuid || "";
+
+		const initialSettings = actionInfo?.payload?.settings || {};
+		if (Object.keys(initialSettings).length > 0) {
+			currentSettings = initialSettings;
+			loadSettings(currentSettings);
+		}
+
+		ws = new WebSocket(`ws://127.0.0.1:${wsPort}`);
+		ws.onopen = () => {
+			ws.send(JSON.stringify({
+				event: registerEvent,
+				uuid: piUuid
+			}));
+			ws.send(JSON.stringify({
+				event: "getSettings",
+				context: context
+			}));
+		};
+		ws.onmessage = (msg) => {
+			const data = JSON.parse(msg.data);
+			if (data.event === "didReceiveSettings") {
+				currentSettings = data.payload?.settings || {};
+				loadSettings(currentSettings);
+			}
+		};
+	});
+
+	function loadSettings(settings) {
+		for (const field of FIELDS) {
+			const el = document.getElementById(field);
+			if (el && settings[field] !== undefined) {
+				el.value = settings[field];
+			}
+		}
+	}
+
+	function saveSettings() {
+		const settings = {};
+		for (const field of FIELDS) {
+			const el = document.getElementById(field);
+			if (!el) continue;
+			settings[field] = el.value;
+		}
+		currentSettings = settings;
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(JSON.stringify({
+				event: "setSettings",
+				context: context,
+				payload: settings
+			}));
+		}
+	}
+
+	for (const field of FIELDS) {
+		const el = document.getElementById(field);
+		if (el) {
+			el.addEventListener("change", saveSettings);
+			el.addEventListener("input", saveSettings);
+		}
+	}
+</script>
+</body>
+</html>
