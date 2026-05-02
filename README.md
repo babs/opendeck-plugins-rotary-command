@@ -7,7 +7,7 @@
 | Clockwise rotation | CW command |
 | Counter-clockwise rotation | CCW command |
 | Short press | Press command |
-| Long press (> 500 ms) | Long press command |
+| Long press (> 750 ms, fires on threshold) | Long press command |
 
 All four commands are configured per-instance via the property inspector.
 
@@ -17,9 +17,10 @@ All four commands are configured per-instance via the property inspector.
 
 Download `info.degois.damien.opendeck.plugins.rotary-command.zip` from the [releases page](../../releases) and install it through OpenDeck.
 
-### From source
+### From source (Linux)
 
-Requires Rust toolchain.
+Requires the Rust toolchain. The supplied Makefile only knows the Linux XDG
+plugin path; macOS and Windows users should install from the release zip.
 
 ```sh
 make install
@@ -37,6 +38,10 @@ make clean            # remove build artifacts
 
 Cross-compile with `TARGET=aarch64-unknown-linux-gnu make build`.
 
+> **Note on logging.** Shell commands are echoed to the log stream at debug
+> level (`RUST_LOG=debug`). Avoid embedding secrets directly in the command —
+> read them from a file or environment variable instead.
+
 ## Example
 
 Volume control via PipeWire:
@@ -50,7 +55,7 @@ Volume control via PipeWire:
 
 ## Acknowledgments
 
-CI workflow inspired by [OpenActionPlugins/mpris](https://github.com/OpenActionPlugins/mpris).
+CI workflow originally inspired by [OpenActionPlugins/mpris](https://github.com/OpenActionPlugins/mpris); since extended for cross-platform builds and a macOS universal binary.
 
 ## License
 
