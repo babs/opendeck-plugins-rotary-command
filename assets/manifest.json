@@ -2,17 +2,24 @@
 	"Name": "Rotary Generic Command",
 	"Description": "Run custom shell commands on rotary encoder actions (CW, CCW, press, long press)",
 	"Author": "babs",
-	"Version": "0.1.0",
+	"Version": "0.2.0",
 	"Icon": "icons/plugin",
-	"Category": "Custom",
+	"Category": "Rotary Encoder",
 	"SDKVersion": 2,
 	"OS": [
-		{ "Platform": "linux" }
+		{ "Platform": "linux" },
+		{ "Platform": "mac" },
+		{ "Platform": "windows" }
 	],
 	"CodePathLin": "opendeck-rotary-generic-x86_64-unknown-linux-gnu",
+	"CodePathMac": "opendeck-rotary-generic-universal-apple-darwin",
+	"CodePathWin": "opendeck-rotary-generic-x86_64-pc-windows-msvc.exe",
 	"CodePaths": {
 		"x86_64-unknown-linux-gnu": "opendeck-rotary-generic-x86_64-unknown-linux-gnu",
-		"aarch64-unknown-linux-gnu": "opendeck-rotary-generic-aarch64-unknown-linux-gnu"
+		"aarch64-unknown-linux-gnu": "opendeck-rotary-generic-aarch64-unknown-linux-gnu",
+		"x86_64-apple-darwin": "opendeck-rotary-generic-universal-apple-darwin",
+		"aarch64-apple-darwin": "opendeck-rotary-generic-universal-apple-darwin",
+		"x86_64-pc-windows-msvc": "opendeck-rotary-generic-x86_64-pc-windows-msvc.exe"
 	},
 	"Actions": [
 		{

@@ -14,12 +14,27 @@ jobs:
     name: Build for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-22.04
+            ext: ""
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-22.04-arm
+            ext: ""
+          # macos-13 is the last Intel-host runner image; once GitHub retires
+          # it, switch this entry to `os: macos-14` and add
+          # `--target x86_64-apple-darwin` cross-compile (Rosetta-host build).
+          - target: x86_64-apple-darwin
+            os: macos-13
+            ext: ""
+          - target: aarch64-apple-darwin
+            os: macos-14
+            ext: ""
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            ext: ".exe"
 
     steps:
       - name: Checkout
@@ -39,19 +54,47 @@ jobs:
         run: cargo build --release --target ${{ matrix.target }}
 
       - name: Rename binary
+        shell: bash
         run: |
           PACKAGE_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r ".packages[0].name")
-          cp "target/${{ matrix.target }}/release/${PACKAGE_NAME}" "${PACKAGE_NAME}-${{ matrix.target }}"
+          cp "target/${{ matrix.target }}/release/${PACKAGE_NAME}${{ matrix.ext }}" "${PACKAGE_NAME}-${{ matrix.target }}${{ matrix.ext }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: binary-${{ matrix.target }}
-          path: opendeck-rotary-generic-${{ matrix.target }}
+          path: opendeck-rotary-generic-${{ matrix.target }}${{ matrix.ext }}
+          compression-level: 0
+
+  macos-universal:
+    name: Lipo macOS universal binary
+    needs: build
+    runs-on: macos-14
+    steps:
+      - name: Download macOS binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: binary-*-apple-darwin
+          path: macos
+          merge-multiple: true
+
+      - name: Create universal binary
+        run: |
+          lipo -create \
+            macos/opendeck-rotary-generic-x86_64-apple-darwin \
+            macos/opendeck-rotary-generic-aarch64-apple-darwin \
+            -output opendeck-rotary-generic-universal-apple-darwin
+          lipo -info opendeck-rotary-generic-universal-apple-darwin
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-universal-apple-darwin
+          path: opendeck-rotary-generic-universal-apple-darwin
           compression-level: 0
 
   package:
-    needs: build
+    needs: [build, macos-universal]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -67,7 +110,14 @@ jobs:
         run: |
           mkdir -p "${UUID}.sdPlugin"
           cp -r assets/* "${UUID}.sdPlugin/"
+          # Universal supersedes the per-arch macOS slices; keep payload small.
+          rm -f binaries/opendeck-rotary-generic-x86_64-apple-darwin \
+                binaries/opendeck-rotary-generic-aarch64-apple-darwin
           cp binaries/* "${UUID}.sdPlugin/"
+          for f in "${UUID}.sdPlugin/"opendeck-rotary-generic-*-unknown-linux-gnu \
+                   "${UUID}.sdPlugin/"opendeck-rotary-generic-universal-apple-darwin; do
+            [ -f "$f" ] && chmod +x "$f"
+          done
           zip -r "${UUID}.zip" "${UUID}.sdPlugin"
 
       - name: Upload package

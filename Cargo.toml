@@ -1,11 +1,10 @@
 [package]
 name = "opendeck-rotary-generic"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
 
 [dependencies]
-anyhow = "1.0"
 dashmap = "6"
 log = "0.4"
 openaction = "2.6"
