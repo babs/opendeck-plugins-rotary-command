@@ -2,7 +2,7 @@
 	"Name": "Rotary Generic Command",
 	"Description": "Run custom shell commands on rotary encoder actions (CW, CCW, press, long press)",
 	"Author": "babs",
-	"Version": "0.2.0",
+	"Version": "1.1.0",
 	"Icon": "icons/plugin",
 	"Category": "Rotary Encoder",
 	"SDKVersion": 2,
