@@ -35,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -57,7 +57,7 @@ jobs:
           cp "target/${{ matrix.target }}/release/${PACKAGE_NAME}${{ matrix.ext }}" "${PACKAGE_NAME}-${{ matrix.target }}${{ matrix.ext }}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-${{ matrix.target }}
           path: opendeck-rotary-generic-${{ matrix.target }}${{ matrix.ext }}
@@ -69,7 +69,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Download macOS binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: binary-*-apple-darwin
           path: macos
@@ -84,7 +84,7 @@ jobs:
           lipo -info opendeck-rotary-generic-universal-apple-darwin
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: binary-universal-apple-darwin
           path: opendeck-rotary-generic-universal-apple-darwin
@@ -95,10 +95,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download all binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: binaries
           merge-multiple: true
@@ -118,7 +118,7 @@ jobs:
           zip -r "${UUID}.zip" "${UUID}.sdPlugin"
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-package
           path: ${{ env.UUID }}.zip
@@ -131,12 +131,12 @@ jobs:
       contents: write
     steps:
       - name: Download package
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: plugin-package
           path: dist
 
       - name: Create release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: dist/*
